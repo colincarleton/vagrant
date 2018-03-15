@@ -13,8 +13,8 @@
 BOX_IMAGE = "bento/centos-7.4"
 NODE_COUNT = 3
 
-ANSIBLE_CONFIG = "~/Repos/ansible/ansible.cfg"
-ANSIBLE_PLAYBOOK_PATH = "/Users/ccarlet/Repos/ansible/playbooks/"
+ANSIBLE_CONFIG = Dir.pwd + "/ansible.cfg"
+ANSIBLE_PLAYBOOK_PATH = Dir.pwd + "/playbooks/"
 ANSIBLE_VERSION = "2.0"
 
 Vagrant.configure("2") do |config|
