@@ -13,6 +13,27 @@
 BOX_IMAGE = "bento/centos-7.4"
 NODE_COUNT = 3
 
+ANSIBLE_INVENTORY = Dir.pwd + "/ansible.cfg"
+ANSIBLE_ROLES = Dir.pwd + "/ansible.cfg"
+
+puts "========================================================================"\
+     "======="
+puts "Setting up Default Environment Variables..."
+puts "========================================================================"\
+     "======="
+
+ansible_config = Dir.pwd + "/ansible.cfg"
+update = [
+  [/\${ANSIBLE_INVENTORY}/, "Inventory", ANSIBLE_INVENTORY],
+  [/\${ANSIBLE_ROLES}/, "Roles", ANSIBLE_ROLES]
+]
+update.each do |update|
+  contents = File.read(ansible_config)
+  configure = contents.gsub(update[0], update[2])
+  puts "==> " + update[1] + ": " + update[2]
+  File.open(ansible_config, "w") {|file| file.write(configure)}
+end
+
 ANSIBLE_CONFIG = Dir.pwd + "/ansible.cfg"
 ANSIBLE_PLAYBOOK_PATH = Dir.pwd + "/playbooks/"
 ANSIBLE_VERSION = "2.0"
