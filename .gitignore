@@ -1,3 +1,4 @@
 #Ignore Vagrant Machines and Synced Folder
+vagrant.cfg
 .vagrant/
 sync/

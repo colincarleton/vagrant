@@ -10,33 +10,59 @@
 
 # Every Vagrant development environment requires a box. You can search for
 # boxes at https://atlas.hashicorp.com/search.
+require 'yaml'
+
 BOX_IMAGE = "bento/centos-7.4"
 NODE_COUNT = 3
+ANSIBLE_VERSION = "2.0"
 
-ANSIBLE_INVENTORY = Dir.pwd + "/ansible.cfg"
-ANSIBLE_ROLES = Dir.pwd + "/ansible.cfg"
+VAGRANT_CONFIG = File.join(Dir.pwd, "vagrant.cfg")
 
-puts "========================================================================"\
-     "======="
-puts "Setting up Default Environment Variables..."
-puts "========================================================================"\
-     "======="
+if File.file?(VAGRANT_CONFIG) == false
+  puts "========================================================================"\
+       "======="
+  puts "Setting up Default Environment Variables..."
+  puts "========================================================================"\
+       "======="
 
-ansible_config = Dir.pwd + "/ansible.cfg"
-update = [
-  [/\${ANSIBLE_INVENTORY}/, "Inventory", ANSIBLE_INVENTORY],
-  [/\${ANSIBLE_ROLES}/, "Roles", ANSIBLE_ROLES]
-]
-update.each do |update|
-  contents = File.read(ansible_config)
-  configure = contents.gsub(update[0], update[2])
-  puts "==> " + update[1] + ": " + update[2]
-  File.open(ansible_config, "w") {|file| file.write(configure)}
+  ANSIBLE_DIRECTORY = File.join(Dir.pwd, "ansible")
+  ANSIBLE_INVENTORY = File.join(ANSIBLE_DIRECTORY, "inventory")
+  ANSIBLE_ROLES = File.join(ANSIBLE_DIRECTORY, "roles")
+  ANSIBLE_LOG_PATH = File.join(ANSIBLE_DIRECTORY, "logs")
+  ANSIBLE_CONFIG = File.join(ANSIBLE_DIRECTORY, "ansible.cfg")
+  ANSIBLE_PLAYBOOK_PATH = File.join(ANSIBLE_DIRECTORY, "playbooks")
+
+  ansiblecfg = [
+    [/\${ANSIBLE_INVENTORY}/, "Inventory", ANSIBLE_INVENTORY],
+    [/\${ANSIBLE_ROLES}/, "Roles Path", ANSIBLE_ROLES],
+    [/\${ANSIBLE_LOG_PATH}/, "Log Path", ANSIBLE_LOG_PATH]
+  ]
+
+  ansiblecfg.each do |update|
+    contents = File.read(ANSIBLE_CONFIG)
+    configure = contents.gsub(update[0], update[2])
+    puts "==> " + update[1] + ": " + update[2]
+    File.open(ANSIBLE_CONFIG, "w") {|file| file.write(configure)}
+  end
+
+  vagrantcfg = {
+    "Ansible_Config": ANSIBLE_CONFIG,
+    "Ansible_Playbook_Path": ANSIBLE_PLAYBOOK_PATH
+  }
+  File.open(VAGRANT_CONFIG, 'w') {|f| f.write vagrantcfg.to_yaml }
+
+else
+  puts "========================================================================"\
+       "======="
+  puts "Loading Settings for vagrant.cfg..."
+  puts "========================================================================"\
+       "======="
+  settings = YAML::load_file(VAGRANT_CONFIG)
+  ANSIBLE_CONFIG = settings[:Ansible_Config]
+  ANSIBLE_PLAYBOOK_PATH = settings[:Ansible_Playbook_Path]
 end
 
-ANSIBLE_CONFIG = Dir.pwd + "/ansible.cfg"
-ANSIBLE_PLAYBOOK_PATH = Dir.pwd + "/playbooks/"
-ANSIBLE_VERSION = "2.0"
+puts ""
 
 Vagrant.configure("2") do |config|
   config.hostmanager.enabled = true
