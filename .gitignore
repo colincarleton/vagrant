@@ -1,5 +1,5 @@
-#Ignore Vagrant Machines and Synced Folder
-vagrant.cfg
 .vagrant/
+.DS_Store
+vagrant.cfg
 sync/
 ansible/
