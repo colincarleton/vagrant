@@ -12,18 +12,18 @@
 # boxes at https://atlas.hashicorp.com/search.
 require 'yaml'
 
-BOX_IMAGE = "bento/centos-7.4"
+BOX_IMAGE = "bento/centos-7.3"
 NODE_COUNT = 3
 ANSIBLE_VERSION = "2.0"
 
 VAGRANT_CONFIG = File.join(Dir.pwd, "vagrant.cfg")
 
 if File.file?(VAGRANT_CONFIG) == false
-  puts "========================================================================"\
-       "======="
+  puts "======================================================================"\
+       "========="
   puts "Setting up Default Environment Variables..."
-  puts "========================================================================"\
-       "======="
+  puts "======================================================================"\
+       "========="
 
   ANSIBLE_DIRECTORY = File.join(Dir.pwd, "ansible")
   ANSIBLE_INVENTORY = File.join(ANSIBLE_DIRECTORY, "inventory")
@@ -50,19 +50,17 @@ if File.file?(VAGRANT_CONFIG) == false
     "Ansible_Playbook_Path": ANSIBLE_PLAYBOOK_PATH
   }
   File.open(VAGRANT_CONFIG, 'w') {|f| f.write vagrantcfg.to_yaml }
-
+  puts ""
 else
   puts "========================================================================"\
        "======="
-  puts "Loading Settings for vagrant.cfg..."
+  puts "Loading Settings from vagrant.cfg..."
   puts "========================================================================"\
        "======="
   settings = YAML::load_file(VAGRANT_CONFIG)
   ANSIBLE_CONFIG = settings[:Ansible_Config]
   ANSIBLE_PLAYBOOK_PATH = settings[:Ansible_Playbook_Path]
 end
-
-puts ""
 
 Vagrant.configure("2") do |config|
   config.hostmanager.enabled = true
@@ -71,161 +69,22 @@ Vagrant.configure("2") do |config|
   config.hostmanager.ignore_private_ip = false
   config.hostmanager.include_offline = true
 
-  config.vm.define "puppet" do |subconfig|
-    subconfig.vm.box = BOX_IMAGE
-    subconfig.vm.hostname = "puppet-test"
-    subconfig.vm.network :private_network, ip: "172.128.1.10"
-    subconfig.vm.provider :virtualbox do |vb|
-      vb.name = "puppet"
-      vb.customize ["modifyvm", :id, "--memory", "2048"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-    end
-    subconfig.vm.provision :ansible do |ansible|
-      ansible.compatibility_mode = ANSIBLE_VERSION
-      ansible.config_file = ANSIBLE_CONFIG
-      ansible.playbook = ANSIBLE_PLAYBOOK_PATH + "puppet-server.yml"
-    end
-    subconfig.ssh.username = 'root'
-    subconfig.ssh.password = 'vagrant'
-    subconfig.ssh.insert_key = 'true'
-  end
-
-  config.vm.define "elasticdeb" do |subconfig|
-    subconfig.vm.box = "bento/ubuntu-17.10"
-    subconfig.vm.hostname = "elasticdeb"
-    subconfig.vm.network :private_network, ip: "172.128.1.5"
-    subconfig.vm.provider :virtualbox do |vb|
-      vb.name = "pi"
-      vb.customize ["modifyvm", :id, "--memory", "2048"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-    end
-    subconfig.vm.provision :ansible do |ansible|
-      ansible.compatibility_mode = ANSIBLE_VERSION
-      ansible.config_file = ANSIBLE_CONFIG
-      ansible.playbook = ANSIBLE_PLAYBOOK_PATH + "elasticdeb.yml"
-    end
-    subconfig.ssh.username = 'root'
-    subconfig.ssh.password = 'vagrant'
-    subconfig.ssh.insert_key = 'true'
-  end
-
-  config.vm.define "jenkins" do |subconfig|
-    subconfig.vm.box = BOX_IMAGE
-    subconfig.vm.hostname = "jenkins"
-    subconfig.vm.network :private_network, ip: "172.128.1.11"
-    subconfig.vm.provider :virtualbox do |vb|
-      vb.name = "jenkins"
-      vb.customize ["modifyvm", :id, "--memory", "1024"]
-      vb.customize ["modifyvm", :id, "--cpus", "1"]
-      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-    end
-    subconfig.vm.provision :ansible do |ansible|
-      ansible.compatibility_mode = ANSIBLE_VERSION
-      ansible.config_file = ANSIBLE_CONFIG
-      ansible.playbook = ANSIBLE_PLAYBOOK_PATH + "jenkins.yml"
-    end
-    subconfig.ssh.username = 'root'
-    subconfig.ssh.password = 'vagrant'
-    subconfig.ssh.insert_key = 'true'
-  end
-
-  config.vm.define "elk" do |subconfig|
-    subconfig.vm.box = BOX_IMAGE
-    subconfig.vm.hostname = "elk"
-    subconfig.vm.network :private_network, ip: "172.128.1.12"
-    subconfig.vm.provider :virtualbox do |vb|
-      vb.name = "elk"
-      vb.customize ["modifyvm", :id, "--memory", "4096"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-    end
-    subconfig.vm.provision :ansible do |ansible|
-      ansible.compatibility_mode = ANSIBLE_VERSION
-      ansible.config_file = ANSIBLE_CONFIG
-      ansible.playbook = ANSIBLE_PLAYBOOK_PATH + "elk.yml"
-    end
-    subconfig.ssh.username = 'root'
-    subconfig.ssh.password = 'vagrant'
-    subconfig.ssh.insert_key = 'true'
-  end
-
-  config.vm.define "elastic" do |subconfig|
-    subconfig.vm.box = BOX_IMAGE
-    subconfig.vm.hostname = "elastic"
-    subconfig.vm.network :private_network, ip: "172.128.1.13"
-    subconfig.vm.provider :virtualbox do |vb|
-      vb.name = "elastic"
-      vb.customize ["modifyvm", :id, "--memory", "1024"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-    end
-    subconfig.vm.provision :ansible do |ansible|
-      ansible.compatibility_mode = ANSIBLE_VERSION
-      ansible.config_file = ANSIBLE_CONFIG
-      ansible.playbook = ANSIBLE_PLAYBOOK_PATH + "elastic.yml"
-    end
-    subconfig.ssh.username = 'root'
-    subconfig.ssh.password = 'vagrant'
-    subconfig.ssh.insert_key = 'true'
-  end
-
-  config.vm.define "prometheus" do |subconfig|
-    subconfig.vm.box = BOX_IMAGE
-    subconfig.vm.hostname = "prometheus"
-    subconfig.vm.network :private_network, ip: "172.128.1.14"
-    subconfig.vm.provider :virtualbox do |vb|
-      vb.name = "prometheus"
-      vb.customize ["modifyvm", :id, "--memory", "2048"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-    end
-    subconfig.vm.provision :ansible do |ansible|
-      ansible.compatibility_mode = ANSIBLE_VERSION
-      ansible.config_file = ANSIBLE_CONFIG
-      ansible.playbook = ANSIBLE_PLAYBOOK_PATH + "prometheus.yml"
-    end
-    subconfig.ssh.username = 'root'
-    subconfig.ssh.password = 'vagrant'
-    subconfig.ssh.insert_key = 'true'
-  end
-
-  config.vm.define "grafana" do |subconfig|
-    subconfig.vm.box = BOX_IMAGE
-    subconfig.vm.hostname = "grafana"
-    subconfig.vm.network :private_network, ip: "172.128.1.15"
-    subconfig.vm.provider :virtualbox do |vb|
-      vb.name = "grafana"
-      vb.customize ["modifyvm", :id, "--memory", "1024"]
-      vb.customize ["modifyvm", :id, "--cpus", "1"]
-      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-    end
-    subconfig.vm.provision :ansible do |ansible|
-      ansible.compatibility_mode = ANSIBLE_VERSION
-      ansible.config_file = ANSIBLE_CONFIG
-      ansible.playbook = ANSIBLE_PLAYBOOK_PATH + "grafana.yml"
-    end
-    subconfig.ssh.username = 'root'
-    subconfig.ssh.password = 'vagrant'
-    subconfig.ssh.insert_key = 'true'
-  end
-
   (1..NODE_COUNT).each do |i|
     config.vm.define "node#{i}" do |subconfig|
+      node_playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "nodes.yml")
       subconfig.vm.box = BOX_IMAGE
       subconfig.vm.hostname = "node#{i}"
-      subconfig.vm.network :private_network, ip: "172.128.1.#{i + 19}"
+      subconfig.vm.network :private_network, ip: "172.128.1.#{i + 9}"
       subconfig.vm.provider :virtualbox do |vb|
         vb.name = "node#{i}"
-        vb.customize ["modifyvm", :id, "--memory", "4096"]
-        vb.customize ["modifyvm", :id, "--cpus", "2"]
+        vb.customize ["modifyvm", :id, "--memory", "1024"]
+        vb.customize ["modifyvm", :id, "--cpus", "1"]
         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       end
       subconfig.vm.provision :ansible do |ansible|
         ansible.compatibility_mode = ANSIBLE_VERSION
         ansible.config_file = ANSIBLE_CONFIG
-        ansible.playbook = ANSIBLE_PLAYBOOK_PATH + "nodes.yml"
+        ansible.playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "nodes.yml")
       end
       subconfig.ssh.username = 'root'
       subconfig.ssh.password = 'vagrant'
@@ -233,3 +92,15 @@ Vagrant.configure("2") do |config|
     end
   end
 end
+
+################################################################################
+############# Auto adjust playbook hosts for vagarnt, to add later #############
+################################################################################
+# node_playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "nodes.yml")
+# contents = File.read(node_playbook)
+# playbookcfg = contents.gsub(/\${NODE}/, "node#{i}"
+# File.open(node_playbook, "w") {|file| file.write(playbookcfg)}
+#
+# contents = File.read(node_playbook)
+# playbookcfg = contents.gsub(/node#{i}$/, "${NODE}")
+# File.open(node_playbook, "w") {|file| file.write(playbookcfg)}

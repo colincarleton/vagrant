@@ -2,3 +2,4 @@
 vagrant.cfg
 .vagrant/
 sync/
+ansible/
