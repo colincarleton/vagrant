@@ -81,6 +81,7 @@ Vagrant.configure("2") do |config|
       ansible.config_file = ANSIBLE_CONFIG
       ansible.playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "registry.yml")
       ansible.inventory_path = ANSIBLE_INVENTORY
+      #ansible.extra_vars = { ansible_python_interpreter: '/usr/bin/python3.6' }
     end
     subconfig.ssh.username = 'root'
     subconfig.ssh.password = 'vagrant'
