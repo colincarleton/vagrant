@@ -96,7 +96,7 @@ Vagrant.configure("2") do |config|
       subconfig.vm.provider :virtualbox do |vb|
         vb.name = "node#{i}"
         vb.customize ["modifyvm", :id, "--memory", "1024"]
-        vb.customize ["modifyvm", :id, "--cpus", "1"]
+        vb.customize ["modifyvm", :id, "--cpus", "2"]
         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       end
       subconfig.vm.provision :ansible do |ansible|
@@ -104,6 +104,7 @@ Vagrant.configure("2") do |config|
         ansible.config_file = ANSIBLE_CONFIG
         ansible.playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "docker.yml")
         ansible.inventory_path = ANSIBLE_INVENTORY
+        #ansible.verbose = '-vvv'
       end
       subconfig.ssh.username = 'root'
       subconfig.ssh.password = 'vagrant'
