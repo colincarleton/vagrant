@@ -66,28 +66,6 @@ Vagrant.configure("2") do |config|
     ANSIBLE_INVENTORY = settings[:Ansible_Inventory]
   end
 
-  config.vm.define "docker" do |subconfig|
-    subconfig.vm.box = BOX_IMAGE
-    subconfig.vm.hostname = "docker"
-    subconfig.vm.network :private_network, ip: "172.128.1.10"
-    subconfig.vm.provider :virtualbox do |vb|
-      vb.name = "docker"
-      vb.customize ["modifyvm", :id, "--memory", "1024"]
-      vb.customize ["modifyvm", :id, "--cpus", "1"]
-      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-    end
-    subconfig.vm.provision :ansible do |ansible|
-      ansible.compatibility_mode = ANSIBLE_VERSION
-      ansible.config_file = ANSIBLE_CONFIG
-      ansible.playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "docker.yml")
-      ansible.inventory_path = ANSIBLE_INVENTORY
-      #ansible.extra_vars = { ansible_python_interpreter: '/usr/bin/python3.6' }
-    end
-    subconfig.ssh.username = 'root'
-    subconfig.ssh.password = 'vagrant'
-    subconfig.ssh.insert_key = 'true'
-  end
-
   (1..NODE_COUNT).each do |i|
     config.vm.define "node#{i}" do |subconfig|
       subconfig.vm.box = BOX_IMAGE
@@ -95,14 +73,38 @@ Vagrant.configure("2") do |config|
       subconfig.vm.network :private_network, ip: "172.128.1.#{i + 29}"
       subconfig.vm.provider :virtualbox do |vb|
         vb.name = "node#{i}"
-        vb.customize ["modifyvm", :id, "--memory", "1024"]
+        vb.customize ["modifyvm", :id, "--memory", "2048"]
         vb.customize ["modifyvm", :id, "--cpus", "2"]
         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       end
       subconfig.vm.provision :ansible do |ansible|
         ansible.compatibility_mode = ANSIBLE_VERSION
         ansible.config_file = ANSIBLE_CONFIG
-        ansible.playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "docker.yml")
+        ansible.playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "nodes.yml")
+        ansible.inventory_path = ANSIBLE_INVENTORY
+        #ansible.verbose = '-vvv'
+      end
+      subconfig.ssh.username = 'root'
+      subconfig.ssh.password = 'vagrant'
+      subconfig.ssh.insert_key = 'true'
+    end
+  end
+
+  (1..NODE_COUNT).each do |i|
+    config.vm.define "large_node#{i}" do |subconfig|
+      subconfig.vm.box = BOX_IMAGE
+      subconfig.vm.hostname = "large_node#{i}"
+      subconfig.vm.network :private_network, ip: "172.128.1.#{i + 39}"
+      subconfig.vm.provider :virtualbox do |vb|
+        vb.name = "larege_node#{i}"
+        vb.customize ["modifyvm", :id, "--memory", "10240"]
+        vb.customize ["modifyvm", :id, "--cpus", "4"]
+        vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      end
+      subconfig.vm.provision :ansible do |ansible|
+        ansible.compatibility_mode = ANSIBLE_VERSION
+        ansible.config_file = ANSIBLE_CONFIG
+        ansible.playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "nodes.yml")
         ansible.inventory_path = ANSIBLE_INVENTORY
         #ansible.verbose = '-vvv'
       end
