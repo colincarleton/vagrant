@@ -20,7 +20,7 @@ VAGRANT_CONFIG = File.join(Dir.pwd, "vagrant.cfg")
 
 Vagrant.configure("2") do |config|
   config.hostmanager.enabled = true
-  config.hostmanager.manage_host = false
+  config.hostmanager.manage_host = true
   config.hostmanager.manage_guest = true
   config.hostmanager.ignore_private_ip = false
   config.hostmanager.include_offline = true
@@ -82,6 +82,8 @@ Vagrant.configure("2") do |config|
         ansible.config_file = ANSIBLE_CONFIG
         ansible.playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "nodes.yml")
         ansible.inventory_path = ANSIBLE_INVENTORY
+        #ansible.ask_vault_pass = TRUE
+        ansible.vault_password_file = "/Users/ccarlet1/neolith/.edmspass"
         #ansible.verbose = '-vvv'
       end
       subconfig.ssh.username = 'root'
@@ -91,12 +93,12 @@ Vagrant.configure("2") do |config|
   end
 
   (1..NODE_COUNT).each do |i|
-    config.vm.define "large_node#{i}" do |subconfig|
+    config.vm.define "lnode#{i}" do |subconfig|
       subconfig.vm.box = BOX_IMAGE
-      subconfig.vm.hostname = "large_node#{i}"
+      subconfig.vm.hostname = "lnode#{i}"
       subconfig.vm.network :private_network, ip: "172.128.1.#{i + 39}"
       subconfig.vm.provider :virtualbox do |vb|
-        vb.name = "larege_node#{i}"
+        vb.name = "lnode#{i}"
         vb.customize ["modifyvm", :id, "--memory", "10240"]
         vb.customize ["modifyvm", :id, "--cpus", "4"]
         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -104,10 +106,11 @@ Vagrant.configure("2") do |config|
       subconfig.vm.provision :ansible do |ansible|
         ansible.compatibility_mode = ANSIBLE_VERSION
         ansible.config_file = ANSIBLE_CONFIG
-        ansible.playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "nodes.yml")
+        ansible.playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "lnodes.yml")
         ansible.inventory_path = ANSIBLE_INVENTORY
         #ansible.verbose = '-vvv'
       end
+      subconfig.vm.synced_folder "/Users/ccarlet1/vagrant/sync", "/sync"
       subconfig.ssh.username = 'root'
       subconfig.ssh.password = 'vagrant'
       subconfig.ssh.insert_key = 'true'
