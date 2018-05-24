@@ -26,11 +26,11 @@ Vagrant.configure("2") do |config|
   config.hostmanager.include_offline = true
 
   if File.file?(VAGRANT_CONFIG) == false
-    puts "======================================================================"\
-         "========="
+    puts "===================================================================="\
+         "==========="
     puts "Setting up Default Environment Variables..."
-    puts "======================================================================"\
-         "========="
+    puts "===================================================================="\
+         "==========="
 
     ANSIBLE_DIRECTORY = File.join(Dir.pwd, "ansible")
     ANSIBLE_INVENTORY = File.join(ANSIBLE_DIRECTORY, "inventory")
@@ -108,7 +108,6 @@ Vagrant.configure("2") do |config|
         ansible.config_file = ANSIBLE_CONFIG
         ansible.playbook = File.join(ANSIBLE_PLAYBOOK_PATH, "lnodes.yml")
         ansible.inventory_path = ANSIBLE_INVENTORY
-        #ansible.verbose = '-vvv'
       end
       subconfig.vm.synced_folder "/Users/ccarlet1/vagrant/sync", "/sync"
       subconfig.ssh.username = 'root'
